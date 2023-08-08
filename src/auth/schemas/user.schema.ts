@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Service, ServiceSchema } from 'src/users/schemas/services.schema';
 
 export type UserDocument = User & Document;
 
@@ -17,7 +18,7 @@ export class User {
   email: string;
 
   @Prop()
-  phoneNumber: number;
+  phoneNumber: string;
 
   @Prop()
   password: string;
@@ -33,6 +34,12 @@ export class User {
   
   @Prop()
   expiresAt: Date
+
+  @Prop()
+  profilePicture: string
+
+  @Prop({ type: ServiceSchema })
+  service: Service;
 
   // @Prop({ type: { value: { type: String }, expiresAt: { type: Date } } })
   // otp: { value: string, expiresAt: Date };

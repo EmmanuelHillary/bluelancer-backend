@@ -25,7 +25,7 @@ export class SignUpDto {
   readonly password: string;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   readonly phoneNumber: number;
 
   @IsBoolean()

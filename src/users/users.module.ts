@@ -5,13 +5,19 @@ import { AuthModule } from 'src/auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from 'src/auth/schemas/user.schema';
 import { JwtService } from '@nestjs/jwt';
+import { Service, ServiceSchema } from './schemas/services.schema';
+import { Cloudinary } from './cloudinary.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }])
+    MongooseModule.forFeature([
+      { name: 'User', schema: UserSchema },
+      { name: Service.name, schema: ServiceSchema},
+    ])
 ],
   controllers: [UsersController],
-  providers: [UsersService, JwtService],
+  providers: [UsersService, JwtService, Cloudinary],
+  exports: [UsersService, Cloudinary]
 })
 export class UsersModule {}
 
