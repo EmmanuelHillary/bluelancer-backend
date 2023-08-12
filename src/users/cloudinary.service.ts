@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as cloudinary from 'cloudinary';
 
 import { removeUnusedImage } from './utilities';
-import { cloudinaryConfig } from 'src/config/cloudinary.config';
+import { cloudinaryConfig } from '../config/cloudinary.config';
 const toStream = require('buffer-to-stream');
 
 @Injectable()

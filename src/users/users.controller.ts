@@ -11,7 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthMiddleware } from 'src/auth/auth.middleware';
+import { AuthMiddleware } from '../auth/auth.middleware';
 import { UsersMiddleware } from './users.middleware';
 import { CurrentUser } from './users.decorator';
 import { AuthGuard } from '@nestjs/passport';
