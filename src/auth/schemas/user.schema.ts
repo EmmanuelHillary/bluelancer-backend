@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { Service, ServiceSchema } from 'src/users/schemas/services.schema';
+import { Type } from 'class-transformer';
+import mongoose, { Document } from 'mongoose';
+import { Service } from '../../users/schemas/services.schema';
 
 export type UserDocument = User & Document;
 
@@ -30,21 +31,20 @@ export class User {
   occupation?: string;
 
   @Prop()
-  otp: string
-  
-  @Prop()
-  expiresAt: Date
+  otp: string;
 
   @Prop()
-  profilePicture: string
+  expiresAt: Date;
 
-  @Prop({ type: ServiceSchema })
+  @Prop()
+  profilePicture: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Service.name })
+  @Type(() => Service)
   service: Service;
 
   // @Prop({ type: { value: { type: String }, expiresAt: { type: Date } } })
   // otp: { value: string, expiresAt: Date };
-
- 
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
