@@ -4,6 +4,7 @@ import * as cloudinary from 'cloudinary';
 
 import { removeUnusedImage } from './utilities';
 import { cloudinaryConfig } from 'src/config/cloudinary.config';
+const toStream = require('buffer-to-stream');
 
 @Injectable()
 export class Cloudinary {
@@ -14,20 +15,17 @@ export class Cloudinary {
     //this.cloud.config(this.configService.get('cloudinary'));
     this.logger = new Logger('UPLOAD_SERVICE');
   }
-  async uploadFile(filePath: string, options: any = {}) {
-    try {
-      const result = await this.cloud.uploader.upload(filePath, {
-        folder: 'profilePicture',
-        overwrite: true,
-        ...options,
+  async uploadImage(
+    file: Express.Multer.File,
+  ): Promise<cloudinary.UploadApiResponse | cloudinary.UploadApiErrorResponse> {
+    return new Promise((resolve, reject) => {
+      const upload = this.cloud.uploader.upload_stream((error, result) => {
+        if (error) return reject(error);
+        resolve(result);
       });
 
-      return result;
-    } catch (error) {
-      this.logger.error(error, error?.stack);
-      throw new BadRequestException(error);
-    } finally {
-      removeUnusedImage(filePath);
-    }
+      toStream(file.buffer).pipe(upload);
+    });
   }
+
 }
