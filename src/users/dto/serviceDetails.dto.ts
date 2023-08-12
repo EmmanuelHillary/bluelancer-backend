@@ -1,4 +1,4 @@
-// src/users/dto/service-details.dto.ts
+// ../users/dto/service-details.dto.ts
 import { IsNotEmpty, IsString, IsNumber, IsPositive, Min, Max } from 'class-validator';
 
 export class ServiceDetailsDto {

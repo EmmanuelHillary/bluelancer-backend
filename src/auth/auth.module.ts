@@ -10,7 +10,7 @@ import { UserSchema } from './schemas/user.schema';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module'; // Import the module containing the UsersService
 import { UsersService } from '../users/users.service'; // Import the UsersService
-import { Service, ServiceSchema } from 'src/users/schemas/services.schema';
+import { Service, ServiceSchema } from '../users/schemas/services.schema';
 
 
 @Module({
