@@ -10,13 +10,12 @@ import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-
-import * as moment from 'moment';
 import * as bcrypt from 'bcryptjs';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import EmailService from '../email/email.service';
 var phoneToken = require('generate-sms-verification-code');
+var moment = require('moment')
 
 // Create a transporter using SMTP transport
 // const transporter = nodemailer.createTransport({
