@@ -15,8 +15,8 @@ import * as moment from 'moment';
 import * as bcrypt from 'bcryptjs';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
-import EmailService from '../email/email.service'
-import * as Phonetoken from 'generate-sms-verification-code';
+import EmailService from '../email/email.service';
+var phoneToken = require('generate-sms-verification-code');
 
 // Create a transporter using SMTP transport
 // const transporter = nodemailer.createTransport({
@@ -35,9 +35,7 @@ export class AuthService {
     @InjectModel(User.name)
     private userModel: Model<User>,
     private jwtService: JwtService,
-    private readonly emailService: EmailService
-    // private emailService: EmailService,
-    
+    private readonly emailService: EmailService, // private emailService: EmailService,
   ) {}
   async signUp(signUpDto: SignUpDto): Promise<User> {
     const {
@@ -70,7 +68,6 @@ export class AuthService {
 
       await user.save();
 
-
       return await this.userModel.findOne({ email }).select('-password').exec();
       // const token = await this.jwtService.sign({ id: user._id });
       // return { token };
@@ -80,7 +77,6 @@ export class AuthService {
       }
     }
   }
-
 
   async login(loginDto: LoginDto): Promise<{ token: string }> {
     const { email, password } = loginDto;
@@ -99,8 +95,8 @@ export class AuthService {
   }
 
   generateUserVerificationCode() {
-    console.log("I generated the OTP");
-    return Phonetoken(6);
+    console.log('I generated the OTP');
+    return phoneToken(6);
   }
   async sendVerificationOTP(email: string) {
     const verificationCode = this.generateUserVerificationCode();
@@ -113,14 +109,13 @@ export class AuthService {
     // );
     const text = `Your verification code is: ${verificationCode}`;
 
-
     const otp = await this.userModel.findOneAndUpdate(
-      {email},
+      { email },
       {
         otp: verificationCode,
-        expiresAt: moment().add(5, 'm').toDate()
-
-      });
+        expiresAt: moment().add(5, 'm').toDate(),
+      },
+    );
     this.emailService.sendMail({
       to: email,
       subject: 'Email confirmation',
@@ -130,12 +125,16 @@ export class AuthService {
   }
 
   async validateOTP(email: string, otp: string): Promise<boolean> {
-    const user = await this.userModel.findOne({email}).exec();
-    const currentTime =  moment().toDate();
-    if ((!user || !user.otp || user.otp !== otp) || currentTime > user.expiresAt ) {
+    const user = await this.userModel.findOne({ email }).exec();
+    const currentTime = moment().toDate();
+    if (
+      !user ||
+      !user.otp ||
+      user.otp !== otp ||
+      currentTime > user.expiresAt
+    ) {
       throw new BadRequestException('Invalid OTP');
     }
     return true;
   }
-
 }
