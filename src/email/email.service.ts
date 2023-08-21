@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter, SentMessageInfo } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
@@ -46,23 +46,16 @@ const html = (code: string): string => {
 
 @Injectable()
 export default class EmailService {
-  private nodemailerTransport: Transporter<SentMessageInfo>;
-  constructor(private readonly configService: ConfigService) {
-    this.nodemailerTransport = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: this.configService.get('EMAIL_USER'),
-        pass: this.configService.get('EMAIL_PASSWORD'),
-      },
-    });
-  }
+  private logger = new Logger('EmailService');
+  constructor(private readonly configService: ConfigService) {}
 
   async sendMail(options: options) {
+    this.logger.log(`Email Function`)
     const RESEND_API_KEY = this.configService.get('RESEND_API_KEY');
     const user = options?.to;
     const subject = options?.subject;
     const code = options?.code;
-
+    this.logger.log(`Sending Email ${JSON.stringify(options, null, 2)}`)
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -76,9 +69,10 @@ export default class EmailService {
         html: html(code),
       }),
     });
-
+    this.logger.log(`Email sent`)
     if (res.ok) {
       const data = await res.json();
+      this.logger.log(`Email Response :-> ${JSON.stringify(data, null, 2)}`)
       return data;
     }
   }
