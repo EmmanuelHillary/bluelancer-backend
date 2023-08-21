@@ -15,7 +15,7 @@ import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import EmailService from '../email/email.service';
 var phoneToken = require('generate-sms-verification-code');
-var moment = require('moment')
+var moment = require('moment');
 
 // Create a transporter using SMTP transport
 // const transporter = nodemailer.createTransport({
@@ -106,7 +106,7 @@ export class AuthService {
     //     otpExpirationDate: moment().add(5, 'm').toDate(),
     //   },
     // );
-    const text = `Your verification code is: ${verificationCode}`;
+    const text = `${verificationCode}`;
 
     const otp = await this.userModel.findOneAndUpdate(
       { email },
@@ -118,7 +118,7 @@ export class AuthService {
     this.emailService.sendMail({
       to: email,
       subject: 'Email confirmation',
-      text,
+      code: text,
     });
     console.log('Email sent Succesfully');
   }
