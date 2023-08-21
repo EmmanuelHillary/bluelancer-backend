@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';;
-import * as Mail from 'nodemailer/lib/mailer';
+import * as nodemailer from 'nodemailer';
+import { Transporter, SentMessageInfo } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export default class EmailService {
-  private nodemailerTransport: Mail;
+  private nodemailerTransport: Transporter<SentMessageInfo>;
 
   constructor(private readonly configService: ConfigService) {
     this.nodemailerTransport = nodemailer.createTransport({
@@ -17,7 +17,7 @@ export default class EmailService {
     });
   }
 
-  sendMail(options: Mail.Options) {
+  sendMail(options: nodemailer.SendMailOptions) {
     return this.nodemailerTransport.sendMail(options);
   }
 }
