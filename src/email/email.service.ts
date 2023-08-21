@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter, SentMessageInfo } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
+import { Resend } from 'resend';
 
 interface options {
   to: string;
@@ -47,47 +47,58 @@ const html = (code: string): string => {
 
 @Injectable()
 export default class EmailService {
-  private logger = new Logger('EmailService');
+  private nodemailerTransport: Transporter<SentMessageInfo>;
   constructor(private readonly configService: ConfigService) {}
 
   async sendMail(options: options) {
-    this.logger.log(`Email Function`);
-    const RESEND_API_KEY = this.configService.get('RESEND_API_KEY');
     const user = options?.to;
     const subject = options?.subject;
     const code = options?.code;
-    this.logger.log(`Sending Email ${JSON.stringify(options, null, 2)}`);
-    try {
-      const response = await axios.post(
-        'https://api.resend.com/emails',
-        {
-          from: 'Bluelancer <onboarding@resend.dev>',
-          to: [user],
-          subject: subject,
-          html: html(code),
+    const transporter: Transporter<SentMessageInfo> =
+      nodemailer.createTransport({
+        port: 465,
+        host: 'smtp.gmail.com',
+        auth: {
+          user: this.configService.get('EMAIL_USER'),
+          pass: this.configService.get('EMAIL_PASSWORD'),
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-        },
-      );
+        secure: true,
+      });
 
-      this.logger.log('Email sent');
+    await new Promise((resolve, reject) => {
+      // verify connection configuration
+      transporter.verify(function (error, success) {
+        if (error) {
+          console.log(error);
+          reject(error);
+        } else {
+          console.log('Server is ready to take our messages');
+          resolve(success);
+        }
+      });
+    });
 
-      if (response.status === 200) {
-        const data = response.data;
-        this.logger.log(`Email Response :->${JSON.stringify(data, null, 2)}`);
-        return data;
-      } else {
-        const data = response.data;
-        this.logger.log(
-          `Email Error Response :->${JSON.stringify(data, null, 2)}`,
-        );
-      }
-    } catch (error) {
-      this.logger.log(`An error occurred:, ${error}`);
-    }
+    const mailData = {
+      from: {
+        name: `Bluelancer`,
+        address: 'info@bluelancer.com',
+      },
+      to: user,
+      subject: subject,
+      html: html(code),
+    };
+
+    await new Promise((resolve, reject) => {
+      // send mail
+      transporter.sendMail(mailData, (err, info) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          console.log(info);
+          resolve(info);
+        }
+      });
+    });
   }
 }
