@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter, SentMessageInfo } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
 
 interface options {
   to: string;
@@ -48,9 +47,7 @@ const html = (code: string): string => {
 @Injectable()
 export default class EmailService {
   private nodemailerTransport: Transporter<SentMessageInfo>;
-  private resend: Resend;
   constructor(private readonly configService: ConfigService) {
-    this.resend = new Resend(this.configService.get('RESEND_API_KEY'));
     this.nodemailerTransport = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -60,16 +57,29 @@ export default class EmailService {
     });
   }
 
-  sendMail(options: options) {
+  async sendMail(options: options) {
+    const RESEND_API_KEY = this.configService.get('RESEND_API_KEY');
     const user = options?.to;
     const subject = options?.subject;
     const code = options?.code;
-    console.log(options)
-    this.resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: user,
-      subject: subject,
-      html: html(code),
+
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: 'Bluelancer <onboarding@resend.dev>',
+        to: [user],
+        subject: subject,
+        html: html(code),
+      }),
     });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    }
   }
 }
