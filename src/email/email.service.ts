@@ -74,6 +74,9 @@ export default class EmailService {
       const data = await res.json();
       this.logger.log(`Email Response :-> ${JSON.stringify(data, null, 2)}`)
       return data;
+    }else{
+      const data = await res.json();
+      this.logger.log(`Email Error Response :-> ${JSON.stringify(data, null, 2)}`)
     }
   }
 }
