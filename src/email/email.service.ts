@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter, SentMessageInfo } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 
 interface options {
   to: string;
@@ -50,33 +51,43 @@ export default class EmailService {
   constructor(private readonly configService: ConfigService) {}
 
   async sendMail(options: options) {
-    this.logger.log(`Email Function`)
+    this.logger.log(`Email Function`);
     const RESEND_API_KEY = this.configService.get('RESEND_API_KEY');
     const user = options?.to;
     const subject = options?.subject;
     const code = options?.code;
-    this.logger.log(`Sending Email ${JSON.stringify(options, null, 2)}`)
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: 'Bluelancer <onboarding@resend.dev>',
-        to: [user],
-        subject: subject,
-        html: html(code),
-      }),
-    });
-    this.logger.log(`Email sent`)
-    if (res.ok) {
-      const data = await res.json();
-      this.logger.log(`Email Response :-> ${JSON.stringify(data, null, 2)}`)
-      return data;
-    } else{
-      const data = await res.json();
-      this.logger.log(`Email Error Response :-> ${JSON.stringify(data, null, 2)}`)
+    this.logger.log(`Sending Email ${JSON.stringify(options, null, 2)}`);
+    try {
+      const response = await axios.post(
+        'https://api.resend.com/emails',
+        {
+          from: 'Bluelancer <onboarding@resend.dev>',
+          to: [user],
+          subject: subject,
+          html: html(code),
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+          },
+        },
+      );
+
+      this.logger.log('Email sent');
+
+      if (response.status === 200) {
+        const data = response.data;
+        this.logger.log(`Email Response :->${JSON.stringify(data, null, 2)}`);
+        return data;
+      } else {
+        const data = response.data;
+        this.logger.log(
+          `Email Error Response :->${JSON.stringify(data, null, 2)}`,
+        );
+      }
+    } catch (error) {
+      this.logger.log(`An error occurred:, ${error}`);
     }
   }
 }
